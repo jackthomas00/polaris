@@ -16,6 +16,24 @@ func (r *mutationResolver) RecordUsage(ctx context.Context, metric string, quant
 	return r.Resolver.RecordUsage(ctx, metric, quantity)
 }
 
+// GenerateInvoice is the resolver for the generateInvoice field.
+func (r *mutationResolver) GenerateInvoice(ctx context.Context, periodStart string, periodEnd string) (*graphql1.Invoice, error) {
+	invoice, err := r.Resolver.GenerateInvoice(ctx, periodStart, periodEnd)
+	if err != nil {
+		return nil, err
+	}
+	if invoice == nil {
+		return nil, nil
+	}
+	return &graphql1.Invoice{
+		ID:          invoice.ID,
+		TotalAmount: invoice.TotalAmount,
+		Status:      invoice.Status,
+		PeriodStart: invoice.PeriodStart,
+		PeriodEnd:   invoice.PeriodEnd,
+	}, nil
+}
+
 // Me is the resolver for the me field.
 func (r *queryResolver) Me(ctx context.Context) (*graphql1.Organization, error) {
 	org, err := r.Resolver.Me(ctx)

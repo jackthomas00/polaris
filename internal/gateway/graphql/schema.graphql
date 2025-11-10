@@ -6,6 +6,7 @@ type Query {
 
 type Mutation {
   recordUsage(metric: String!, quantity: Int!): Boolean!
+  generateInvoice(periodStart: String!, periodEnd: String!): Invoice!
 }
 
 type Organization {

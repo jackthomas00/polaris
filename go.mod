@@ -5,6 +5,7 @@ go 1.25
 require (
 	github.com/99designs/gqlgen v0.17.82
 	github.com/lib/pq v1.10.9
+	github.com/rs/zerolog v1.34.0
 	github.com/vektah/gqlparser/v2 v2.5.31
 	google.golang.org/grpc v1.64.0
 	google.golang.org/protobuf v1.36.10
@@ -14,7 +15,6 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/rs/zerolog v1.34.0 // indirect
 )
 
 require (

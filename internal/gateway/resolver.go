@@ -170,6 +170,47 @@ func (r *Resolver) RecordUsage(ctx context.Context, metric string, quantity int)
 	return resp.Success, nil
 }
 
+func (r *Resolver) GenerateInvoice(ctx context.Context, periodStart, periodEnd string) (*Invoice, error) {
+	authCtx := GetAuthContext(ctx)
+	if authCtx == nil {
+		return nil, fmt.Errorf("unauthorized")
+	}
+
+	// Parse period start and end from RFC3339 format
+	startTime, err := time.Parse(time.RFC3339, periodStart)
+	if err != nil {
+		return nil, fmt.Errorf("invalid periodStart format: %w", err)
+	}
+
+	endTime, err := time.Parse(time.RFC3339, periodEnd)
+	if err != nil {
+		return nil, fmt.Errorf("invalid periodEnd format: %w", err)
+	}
+
+	client, close, err := r.getBillingClient()
+	if err != nil {
+		return nil, err
+	}
+	defer close()
+
+	resp, err := client.GenerateInvoice(ctx, &billingv1.GenerateInvoiceRequest{
+		OrgId:           authCtx.OrgID,
+		PeriodStartUnix: startTime.Unix(),
+		PeriodEndUnix:   endTime.Unix(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &Invoice{
+		ID:          resp.Id,
+		TotalAmount: resp.TotalAmount,
+		Status:      resp.Status,
+		PeriodStart: time.Unix(resp.PeriodStartUnix, 0).UTC().Format(time.RFC3339),
+		PeriodEnd:   time.Unix(resp.PeriodEndUnix, 0).UTC().Format(time.RFC3339),
+	}, nil
+}
+
 type Organization struct {
 	ID   string
 	Name string
