@@ -29,7 +29,7 @@ func NewResolver(identityAddr, usageAddr, billingAddr string) *Resolver {
 }
 
 func (r *Resolver) getIdentityClient() (identityv1.IdentityClient, func() error, error) {
-	conn, err := grpc.Dial(r.identityAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(r.identityAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -37,7 +37,7 @@ func (r *Resolver) getIdentityClient() (identityv1.IdentityClient, func() error,
 }
 
 func (r *Resolver) getUsageClient() (usagev1.UsageClient, func() error, error) {
-	conn, err := grpc.Dial(r.usageAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(r.usageAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -45,7 +45,7 @@ func (r *Resolver) getUsageClient() (usagev1.UsageClient, func() error, error) {
 }
 
 func (r *Resolver) getBillingClient() (billingv1.BillingClient, func() error, error) {
-	conn, err := grpc.Dial(r.billingAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(r.billingAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, nil, err
 	}

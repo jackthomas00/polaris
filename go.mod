@@ -10,7 +10,12 @@ require (
 	google.golang.org/protobuf v1.36.10
 )
 
-require github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
+require (
+	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/rs/zerolog v1.34.0 // indirect
+)
 
 require (
 	github.com/agnivade/levenshtein v1.2.1 // indirect
