@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package polaris.billing.v1;
+option go_package = "github.com/jackthomas00/polaris/proto/billingv1";
+
+service Billing {
+  rpc GenerateInvoice(GenerateInvoiceRequest) returns (Invoice);
+  rpc ListInvoices(ListInvoicesRequest) returns (ListInvoicesResponse);
+}
+
+message GenerateInvoiceRequest {
+  string org_id = 1;
+  int64 period_start_unix = 2;
+  int64 period_end_unix = 3;
+}
+
+message Invoice {
+  string id = 1;
+  string org_id = 2;
+  int64 period_start_unix = 3;
+  int64 period_end_unix = 4;
+  double total_amount = 5;
+  string status = 6; // "draft", "finalized"
+}
+
+message ListInvoicesRequest {
+  string org_id = 1;
+}
+
+message ListInvoicesResponse {
+  repeated Invoice invoices = 1;
+}

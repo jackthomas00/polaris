@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package polaris.identity.v1;
+option go_package = "github.com/jackthomas00/polaris/proto/identityv1";
+
+service Identity {
+  rpc ValidateApiKey(ValidateApiKeyRequest) returns (ValidateApiKeyResponse);
+  rpc GetOrganization(GetOrganizationRequest) returns (GetOrganizationResponse);
+}
+
+message ValidateApiKeyRequest {
+  string api_key = 1;
+}
+
+message ValidateApiKeyResponse {
+  bool valid = 1;
+  string org_id = 2;
+}
+
+message GetOrganizationRequest {
+  string org_id = 1;
+}
+
+message GetOrganizationResponse {
+  string org_id = 1;
+  string name = 2;
+}

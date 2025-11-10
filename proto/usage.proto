@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package polaris.usage.v1;
+option go_package = "github.com/jackthomas00/polaris/proto/usagev1";
+
+service Usage {
+  rpc RecordUsage(RecordUsageRequest) returns (RecordUsageResponse);
+  rpc GetUsageSummary(GetUsageSummaryRequest) returns (GetUsageSummaryResponse);
+}
+
+message RecordUsageRequest {
+  string org_id = 1;
+  string metric = 2;
+  int64 quantity = 3;
+  string idempotency_key = 4;
+  int64 timestamp_unix = 5;
+}
+
+message RecordUsageResponse {
+  bool success = 1;
+}
+
+message GetUsageSummaryRequest {
+  string org_id = 1;
+  string metric = 2;
+}
+
+message UsageAggregate {
+  string metric = 1;
+  int64 total = 2;
+  int64 period_start_unix = 3;
+  int64 period_end_unix = 4;
+}
+
+message GetUsageSummaryResponse {
+  repeated UsageAggregate aggregates = 1;
+}
