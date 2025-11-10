@@ -1,0 +1,30 @@
+type Query {
+  me: Organization!
+  usage(metric: String!): [UsageAggregate!]!
+  invoices: [Invoice!]!
+}
+
+type Mutation {
+  recordUsage(metric: String!, quantity: Int!): Boolean!
+}
+
+type Organization {
+  id: ID!
+  name: String!
+}
+
+type UsageAggregate {
+  metric: String!
+  total: Float!
+  periodStart: String!
+  periodEnd: String!
+}
+
+type Invoice {
+  id: ID!
+  totalAmount: Float!
+  status: String!
+  periodStart: String!
+  periodEnd: String!
+}
+
