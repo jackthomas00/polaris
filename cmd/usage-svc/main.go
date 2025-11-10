@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net"
 	"os"
+	"time"
 
 	_ "github.com/lib/pq"
 	"google.golang.org/grpc"
@@ -26,6 +28,26 @@ func main() {
 
 	store := usage.NewStore(pg)
 	svc := usage.NewService(store)
+
+	// Start periodic aggregation goroutine
+	go func() {
+		ticker := time.NewTicker(60 * time.Second)
+		defer ticker.Stop()
+
+		// Run immediately on startup
+		ctx := context.Background()
+		if err := store.AggregateUsageEvents(ctx); err != nil {
+			log.Printf("aggregation error: %v", err)
+		}
+
+		// Then run every 60 seconds
+		for range ticker.C {
+			ctx := context.Background()
+			if err := store.AggregateUsageEvents(ctx); err != nil {
+				log.Printf("aggregation error: %v", err)
+			}
+		}
+	}()
 
 	grpcServer := grpc.NewServer()
 	usagev1.RegisterUsageServer(grpcServer, svc)

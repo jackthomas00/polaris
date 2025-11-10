@@ -62,3 +62,21 @@ func (s *Store) GetAggregates(ctx context.Context, orgID, metric string) ([]Aggr
 	}
 	return res, rows.Err()
 }
+
+// AggregateUsageEvents groups usage_events by (org, metric, day) and upserts into usage_aggregates
+func (s *Store) AggregateUsageEvents(ctx context.Context) error {
+	_, err := s.db.ExecContext(ctx, `
+		INSERT INTO usage_aggregates (org_id, metric, period_start, period_end, total)
+		SELECT 
+			org_id,
+			metric,
+			DATE_TRUNC('day', occurred_at) AS period_start,
+			DATE_TRUNC('day', occurred_at) + INTERVAL '1 day' AS period_end,
+			SUM(quantity) AS total
+		FROM usage_events
+		GROUP BY org_id, metric, DATE_TRUNC('day', occurred_at)
+		ON CONFLICT (org_id, metric, period_start, period_end) 
+		DO UPDATE SET total = EXCLUDED.total
+	`)
+	return err
+}

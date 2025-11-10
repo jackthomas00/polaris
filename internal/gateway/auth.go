@@ -22,7 +22,7 @@ func ValidateAPIKey(ctx context.Context, identityAddr, apiKey string) (*AuthCont
 	}
 
 	// Connect to identity service
-	conn, err := grpc.Dial(identityAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(identityAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to identity service: %w", err)
 	}
