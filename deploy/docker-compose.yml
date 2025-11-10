@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: polaris
+      POSTGRES_PASSWORD: polaris
+      POSTGRES_DB: polaris
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ../migrations:/migrations
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U polaris"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  identity-svc:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.identity
+    environment:
+      IDENTITY_DB_DSN: "postgres://polaris:polaris@postgres:5432/polaris?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50051:50051"
+
+  usage-svc:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.usage
+    environment:
+      USAGE_DB_DSN: "postgres://polaris:polaris@postgres:5432/polaris?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50052:50052"
+
+  billing-svc:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.billing
+    environment:
+      BILLING_DB_DSN: "postgres://polaris:polaris@postgres:5432/polaris?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50053:50053"
+
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.gateway
+    environment:
+      IDENTITY_SVC_ADDR: "identity-svc:50051"
+      USAGE_SVC_ADDR: "usage-svc:50052"
+      BILLING_SVC_ADDR: "billing-svc:50053"
+      PORT: "8080"
+    depends_on:
+      - identity-svc
+      - usage-svc
+      - billing-svc
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
+
