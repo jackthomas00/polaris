@@ -1,0 +1,25 @@
+schema:
+  - internal/gateway/graphql/schema.graphql
+
+exec:
+  filename: internal/gateway/graphql/generated/generated.go
+  package: generated
+
+model:
+  filename: internal/gateway/graphql/models_gen.go
+  package: graphql
+
+models:
+  Organization:
+    model: github.com/jackthomas00/polaris/internal/gateway/graphql.Organization
+  UsageAggregate:
+    model: github.com/jackthomas00/polaris/internal/gateway/graphql.UsageAggregate
+  Invoice:
+    model: github.com/jackthomas00/polaris/internal/gateway/graphql.Invoice
+
+resolver:
+  layout: follow-schema
+  dir: internal/gateway
+  package: gateway
+  filename: resolver_gen.go
+
