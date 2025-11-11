@@ -61,6 +61,7 @@ services:
       USAGE_SVC_ADDR: "usage-svc:50052"
       BILLING_SVC_ADDR: "billing-svc:50053"
       PORT: "8080"
+      ENABLE_PLAYGROUND: "1"
     depends_on:
       - identity-svc
       - usage-svc
