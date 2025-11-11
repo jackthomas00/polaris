@@ -4,10 +4,12 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
 	"os"
 	"time"
 
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 
 	"github.com/jackthomas00/polaris/internal/usage"
@@ -28,6 +30,22 @@ func main() {
 
 	store := usage.NewStore(pg)
 	svc := usage.NewService(store)
+
+	// Start HTTP server for health and metrics
+	go func() {
+		httpMux := http.NewServeMux()
+		httpMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("ok"))
+		})
+		httpMux.Handle("/metrics", promhttp.Handler())
+
+		httpAddr := ":9092"
+		log.Printf("usage-svc HTTP server listening on %s", httpAddr)
+		if err := http.ListenAndServe(httpAddr, httpMux); err != nil {
+			log.Fatalf("HTTP server failed: %v", err)
+		}
+	}()
 
 	// Start periodic aggregation goroutine
 	go func() {

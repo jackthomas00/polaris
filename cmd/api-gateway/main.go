@@ -7,6 +7,9 @@ import (
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/jackthomas00/polaris/internal/gateway"
 	"github.com/jackthomas00/polaris/internal/gateway/graphql/generated"
@@ -37,23 +40,33 @@ func main() {
 		}),
 	)
 
-	// Add auth middleware
-	authHandler := gateway.AuthMiddleware(identityAddr, srv)
+	r := chi.NewRouter()
 
-	// GraphQL playground (for development)
-	http.Handle("/playground", playground.Handler("GraphQL playground", "/query"))
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
 
-	// GraphQL endpoint
-	http.Handle("/query", authHandler)
+	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	})
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
+	r.Handle("/metrics", promhttp.Handler())
+
+	// GraphQL Playground (dev only)
+	if os.Getenv("ENABLE_PLAYGROUND") == "1" {
+		r.Handle("/playground", playground.Handler("GraphQL playground", "/graphql"))
 	}
 
-	log.Printf("api-gateway listening on :%s", port)
-	log.Printf("GraphQL playground: http://localhost:%s/playground", port)
-	if err := http.ListenAndServe(":"+port, nil); err != nil {
-		log.Fatalf("serve: %v", err)
+	// Protected GraphQL endpoint
+	r.Group(func(protected chi.Router) {
+		protected.Use(func(next http.Handler) http.Handler {
+			return gateway.AuthMiddleware(identityAddr, next)
+		})
+		protected.Handle("/graphql", srv)
+	})
+
+	log.Printf("api-gateway listening on %s", ":8080")
+	if err := http.ListenAndServe(":8080", r); err != nil {
+		log.Fatal(err)
 	}
 }

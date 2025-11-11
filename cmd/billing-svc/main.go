@@ -3,9 +3,11 @@ package main
 import (
 	"log"
 	"net"
+	"net/http"
 	"os"
 
 	_ "github.com/lib/pq"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 
 	"github.com/jackthomas00/polaris/internal/billing"
@@ -26,6 +28,22 @@ func main() {
 
 	store := billing.NewStore(pg)
 	svc := billing.NewService(store)
+
+	// Start HTTP server for health and metrics
+	go func() {
+		httpMux := http.NewServeMux()
+		httpMux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte("ok"))
+		})
+		httpMux.Handle("/metrics", promhttp.Handler())
+
+		httpAddr := ":9093"
+		log.Printf("billing-svc HTTP server listening on %s", httpAddr)
+		if err := http.ListenAndServe(httpAddr, httpMux); err != nil {
+			log.Fatalf("HTTP server failed: %v", err)
+		}
+	}()
 
 	grpcServer := grpc.NewServer()
 	billingv1.RegisterBillingServer(grpcServer, svc)
